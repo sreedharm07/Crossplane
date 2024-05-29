@@ -126,3 +126,7 @@ spec:
             - type: string
               string:
                 fmt: private-%s-bucket
+
+
+# command = kubectl apply -f s3-bucket-composition.yaml
+#  to check above created resources == kubectl get xrd
