@@ -18,4 +18,4 @@ spec:
 
 
 # command = kubectl apply -f gdz-s3-bucket.yaml
-#  to check above created resources == kubectl apply composite
+#  to check above created resources == kubectl get composite
