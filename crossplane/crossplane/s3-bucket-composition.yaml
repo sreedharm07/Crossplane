@@ -1,0 +1,128 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: compositebuckets.zinier.tools
+  namespace: spdy-dev
+spec:
+  group: zinier.tools
+  names:
+    kind: CompositeBucket
+    plural: compositebuckets
+  claimNames:
+    kind: Bucket
+    plural: bucket
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                parameters:
+                  type: object
+                  properties:
+                    region:
+                      type: string
+                      description: Name of the region
+                    bucketName:
+                      type: string
+                      description: Name of the bucket
+#                    blockPublicAcls:
+#                      type: boolean
+#                      description: public acl for bucket
+#                    blockPublicPolicy:
+#                      type: boolean
+#                      description: public policy for bucket
+                  required:
+                    - region
+                    - bucketName
+#                    - blockPublicAcls
+#                    - blockPublicPolicy
+#                    - bucketSelectorlabel
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: compositebucket.zinier.tools
+  namespace: spdy-dev
+spec:
+  compositeTypeRef:
+    apiVersion: zinier.tools/v1alpha1
+    kind: CompositeBucket
+  resources:
+    - name: "public s3 bucket"
+      base:
+        apiVersion: s3.aws.upbound.io/v1beta1
+        kind: Bucket
+        status:
+          conditions: true
+      patches:
+        - fromFieldPath: "spec.parameters.bucketName"
+          toFieldPath: "metadata.name"
+          transforms:
+            - type: string
+              string:
+                fmt: public-%s-bucket
+        - fromFieldPath: "spec.parameters.region"
+          toFieldPath: "spec.forProvider.region"
+        - fromFieldPath: "spec.parameters.bucketName"
+          toFieldPath: "metadata.labels.name"
+    - name: "private s3 bucket"
+      base:
+        apiVersion: s3.aws.upbound.io/v1beta1
+        kind: Bucket
+        status:
+          conditions: true
+      patches:
+        - fromFieldPath: "spec.parameters.bucketName"
+          toFieldPath: "metadata.name"
+          transforms:
+            - type: string
+              string:
+                fmt: private-%s-bucket
+        - fromFieldPath: "spec.parameters.region"
+          toFieldPath: "spec.forProvider.region"
+        - fromFieldPath: "spec.parameters.bucketName"
+          toFieldPath: "metadata.labels.name"
+    - name: "acls for public bucket"
+      base:
+        apiVersion: s3.aws.upbound.io/v1beta1
+        kind: BucketPublicAccessBlock
+        spec:
+          initProvider:
+            blockPublicAcls: false
+            blockPublicPolicy: false
+        status:
+          conditions: true
+      patches:
+        - fromFieldPath: "spec.parameters.region"
+          toFieldPath: "spec.forProvider.region"
+        - fromFieldPath: "spec.parameters.bucketName"
+          toFieldPath: "spec.initProvider.bucket"
+          transforms:
+            - type: string
+              string:
+                fmt: public-%s-bucket
+    - name: "acls for private bucket"
+      base:
+        apiVersion: s3.aws.upbound.io/v1beta1
+        kind: BucketPublicAccessBlock
+        spec:
+          initProvider:
+            blockPublicAcls: true
+            blockPublicPolicy: true
+        status:
+          conditions: true
+      patches:
+        - fromFieldPath: "spec.parameters.region"
+          toFieldPath: "spec.forProvider.region"
+        - fromFieldPath: "spec.parameters.bucketName"
+          toFieldPath: "spec.initProvider.bucket"
+          transforms:
+            - type: string
+              string:
+                fmt: private-%s-bucket

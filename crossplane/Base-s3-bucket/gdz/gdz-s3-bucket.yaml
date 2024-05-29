@@ -1,0 +1,17 @@
+apiVersion: zinier.tools/v1alpha1
+kind: Bucket
+metadata:
+  name: spdy-dev
+spec:
+  parameters:
+    bucketName: spdy-dev
+    region: ap-south-1
+
+#---
+#apiVersion: zinier.tools/v1beta1
+#kind: BucketPublicAccessBlock
+#metadata:
+#  name: spdy-dev-public-access
+#spec:
+#  parameters:
+#    region: ap-south-1
