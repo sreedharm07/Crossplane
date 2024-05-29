@@ -15,3 +15,7 @@ spec:
 #spec:
 #  parameters:
 #    region: ap-south-1
+
+
+# command = kubectl apply -f gdz-s3-bucket.yaml
+#  to check above created resources == kubectl apply composite
