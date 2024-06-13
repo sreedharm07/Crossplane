@@ -1,0 +1,8 @@
+apiVersion: zinier.tools/v1alpha1
+kind: CompositeBucket
+metadata:
+  name: s3-buckets
+spec:
+  parameters:
+    bucketName: gdz-dev
+    region: ap-south-1
