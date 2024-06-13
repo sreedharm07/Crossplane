@@ -1,5 +1,5 @@
 apiVersion: zinier.tools/v1alpha1
-kind: Bucket
+kind: CompositeBucket
 metadata:
   name: spdy-dev
 spec:
