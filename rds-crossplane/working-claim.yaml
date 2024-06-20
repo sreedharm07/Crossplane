@@ -1,0 +1,167 @@
+apiVersion: zinier.tools/v1alpha1
+kind: CompositeRds
+metadata:
+  name: rds-db
+spec:
+  parameters:
+    allocatedStorage: 20
+    autoGeneratePassword: false
+    autoMinorVersionUpgrade: true
+    backupRetentionPeriod: 1
+    backupWindow: 09:46-10:16
+    dbName: rdstest
+    engine: mysql
+    engineVersion: "8.0"
+    instanceClass: db.t3.small
+    maintenanceWindow: Mon:00:00-Mon:03:00
+    manageMasterUserPassword: false
+    publiclyAccessible: false
+    region: ap-south-1
+    skipFinalSnapshot: true
+    storageEncrypted: true
+    storageType: gp3
+    username: adminuser
+    passwordSecretRef:
+      key: password
+      name: rds-db
+      namespace: crossplane-system
+#    finalSnapshotIdentifier: rds-final-snapshot  # this is final snapshot name
+#    snapshotIdentifier: need to give snapshot name here to create a db from snapshot
+
+# subnet group
+    dbSubnetGroupName: db-subnetgroup-rds
+    subnetIds:
+      - subnet-0b7103d3ce0bcda5d
+      - subnet-04dd17649566d5f74
+      - subnet-06b1065993f03356b
+
+# parameter group
+    parameter:
+      - applyMethod: immediate
+        name: general_log
+        value: "1"
+      - applyMethod: immediate
+        name: innodb_buffer_pool_dump_at_shutdown
+        value: "1"
+      - applyMethod: pending-reboot
+        name: innodb_buffer_pool_instances
+        value: "2"
+      - applyMethod: pending-reboot
+        name: innodb_buffer_pool_load_at_startup
+        value: "1"
+      - applyMethod: immediate
+        name: innodb_flush_log_at_trx_commit
+        value: "1"
+      - applyMethod: immediate
+        name: innodb_status_output
+        value: "1"
+      - applyMethod: immediate
+        name: innodb_status_output_locks
+        value: "1"
+      - applyMethod: immediate
+        name: log_bin_trust_function_creators
+        value: "1"
+      - applyMethod: immediate
+        name: log_output
+        value: "FILE"
+      - applyMethod: immediate
+        name: log_slow_admin_statements
+        value: "1"
+      - applyMethod: immediate
+        name: log_slow_extra
+        value: "ON"
+      - applyMethod: immediate
+        name: log_slow_slave_statements
+        value: "1"
+      - applyMethod: immediate
+        name: max_execution_time
+        value: "15"
+      - applyMethod: pending-reboot
+        name: performance_schema
+        value: "1"
+      - applyMethod: immediate
+        name: slow_launch_time
+        value: "1"
+      - applyMethod: immediate
+        name: slow_query_log
+        value: "1"
+      - applyMethod: immediate
+        name: transaction_isolation
+        value: "READ-COMMITTED"
+      # add more here
+    family: mysql8.0
+    parametergroupname: rds-parametergroup
+
+# option group
+    engineName: mysql
+    majorEngineVersion: "8.0"
+      #    option:
+      #      - optionName: MEMCACHED
+    optionGroupDescription: Upbound Option Group
+    optiongroupname: rds-optionsgroup
+
+# cname record
+    recordname: wov
+    ttl: 5
+    type: CNAME
+    zoneId: Z1019792198XVDDPB0PM7
+
+# kms key
+    deletionWindowInDays: 7
+    description: Created with Crossplane
+    policy: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "Default",
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": "arn:aws:iam::211125510872:root"
+            },
+            "Action": "kms:*",
+            "Resource": "*"
+          },
+          {
+            "Sid": "KeyAdministration",
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": "arn:aws:iam::211125510872:user/aws_tf_user"
+            },
+            "Action": [
+              "kms:Update*",
+              "kms:UntagResource",
+              "kms:TagResource",
+              "kms:ScheduleKeyDeletion",
+              "kms:Revoke*",
+              "kms:ReplicateKey",
+              "kms:Put*",
+              "kms:List*",
+              "kms:ImportKeyMaterial",
+              "kms:Get*",
+              "kms:Enable*",
+              "kms:Disable*",
+              "kms:Describe*",
+              "kms:Delete*",
+              "kms:Create*",
+              "kms:CancelKeyDeletion"
+            ],
+            "Resource": "*"
+          },
+          {
+            "Sid": "KeyUsage",
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": "arn:aws:iam::211125510872:role/sandbox-ap-south-1-cluster-20240531101435513800000001"
+            },
+            "Action": [
+              "kms:ReEncrypt*",
+              "kms:GenerateDataKey*",
+              "kms:Encrypt",
+              "kms:DescribeKey",
+              "kms:Decrypt"
+            ],
+            "Resource": "*"
+          }
+        ]
+      }

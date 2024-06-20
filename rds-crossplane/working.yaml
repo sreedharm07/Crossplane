@@ -1,0 +1,361 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: compositerdss.zinier.tools
+  namespace: crossplane-system
+spec:
+  group: zinier.tools
+  names:
+    kind: CompositeRds
+    plural: compositerdss
+  claimNames:
+    kind: Rds
+    plural: rds
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                parameters:
+                  type: object
+                  properties:
+                    allocatedStorage:
+                      type: number
+                    autoGeneratePassword:
+                      type: boolean
+                    autoMinorVersionUpgrade:
+                      type: boolean
+                    backupRetentionPeriod:
+                      type: number
+                    backupWindow:
+                      type: string
+                    dbName:
+                      type: string
+                    engine:
+                      type: string
+                    engineVersion:
+                      type: string
+                    instanceClass:
+                      type: string
+                    maintenanceWindow:
+                      type: string
+                    manageMasterUserPassword:
+                      type: boolean
+                    publiclyAccessible:
+                      type: boolean
+                    region:
+                      type: string
+                    skipFinalSnapshot:
+                      type: boolean
+                    storageEncrypted:
+                      type: boolean
+                    storageType:
+                      type: string
+                    username:
+                      type: string
+                    subnetIds:
+                      type: array
+                      items:
+                        type: string
+                    dbSubnetGroupName:
+                      type: string
+                    parameter:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          applyMethod:
+                            type: string
+                          name:
+                            type: string
+                          value:
+                            type: string
+                    family:
+                      type: string
+                    parametergroupname:
+                      type: string
+                    engineName:
+                      type: string
+                    majorEngineVersion:
+                      type: string
+                    optionGroupDescription:
+                      type: string
+                    optiongroupname:
+                      type: string
+                    finalSnapshotIdentifier:
+                      type: string
+                    snapshotIdentifier:
+                      type: string
+                    recordname:
+                      type: string
+                    ttl:
+                      type: number
+                    type:
+                      type: string
+                    zoneId:
+                      type: string
+                    passwordSecretRef:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        key:
+                          type: string
+                        namespace:
+                          type: string
+                    deletionWindowInDays:
+                      type: number
+                    description:
+                      type: string
+                    policy:
+                      type: string
+                  required:
+                    - allocatedStorage
+                    - autoGeneratePassword
+                    - autoMinorVersionUpgrade
+                    - backupRetentionPeriod
+                    - backupWindow
+                    - dbName
+                    - engine
+                    - engineVersion
+                    - instanceClass
+                    - maintenanceWindow
+                    - manageMasterUserPassword
+                    - publiclyAccessible
+                    - region
+                    - skipFinalSnapshot
+                    - storageEncrypted
+                    - storageType
+                    - username
+                    - subnetIds
+                    - dbSubnetGroupName
+                    - parameter
+                    - family
+                    - parametergroupname
+                    - engineName
+                    - majorEngineVersion
+                    - optionGroupDescription
+                    - optiongroupname
+                    - recordname
+                    - passwordSecretRef
+                    - deletionWindowInDays
+                    - description
+                    - policy
+              #                    - finalSnapshotIdentifier
+              #                    - snapshotIdentifier
+              required:
+                - parameters
+            status:
+              type: object
+              properties:
+                endpoint:
+                  type: string
+                keyId:
+                  type: string
+                kmsKeyId:
+                  type: string
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: compositerdss.zinier.tools
+  namespace: crossplane-system
+spec:
+  compositeTypeRef:
+    apiVersion: zinier.tools/v1alpha1
+    kind: CompositeRds
+  resources:
+    - name: "db-instance creation"
+      base:
+        apiVersion: rds.aws.upbound.io/v1beta1
+        kind: Instance
+        metadata:
+          name: rds-dbinstance
+        status:
+          conditions: true
+      patches:
+        - fromFieldPath: "spec.parameters.allocatedStorage"
+          toFieldPath: "spec.forProvider.allocatedStorage"
+        - fromFieldPath: "spec.parameters.autoGeneratePassword"
+          toFieldPath: "spec.forProvider.autoGeneratePassword"
+        - fromFieldPath: "spec.parameters.autoMinorVersionUpgrade"
+          toFieldPath: "spec.forProvider.autoMinorVersionUpgrade"
+        - fromFieldPath: "spec.parameters.backupRetentionPeriod"
+          toFieldPath: "spec.forProvider.backupRetentionPeriod"
+        - fromFieldPath: "spec.parameters.backupWindow"
+          toFieldPath: "spec.forProvider.backupWindow"
+        - fromFieldPath: "spec.parameters.dbName"
+          toFieldPath: "spec.forProvider.dbName"
+        - fromFieldPath: "spec.parameters.engine"
+          toFieldPath: "spec.forProvider.engine"
+        - fromFieldPath: "spec.parameters.engineVersion"
+          toFieldPath: "spec.forProvider.engineVersion"
+        - fromFieldPath: "spec.parameters.instanceClass"
+          toFieldPath: "spec.forProvider.instanceClass"
+        - fromFieldPath: "spec.parameters.maintenanceWindow"
+          toFieldPath: "spec.forProvider.maintenanceWindow"
+        - fromFieldPath: "spec.parameters.manageMasterUserPassword"
+          toFieldPath: "spec.forProvider.manageMasterUserPassword"
+        - fromFieldPath: "spec.parameters.publiclyAccessible"
+          toFieldPath: "spec.forProvider.publiclyAccessible"
+        - fromFieldPath: "spec.parameters.region"
+          toFieldPath: "spec.forProvider.region"
+        - fromFieldPath: "spec.parameters.skipFinalSnapshot"
+          toFieldPath: "spec.forProvider.skipFinalSnapshot"
+        - fromFieldPath: "spec.parameters.storageEncrypted"
+          toFieldPath: "spec.forProvider.storageEncrypted"
+        - fromFieldPath: "spec.parameters.storageType"
+          toFieldPath: "spec.forProvider.storageType"
+        - fromFieldPath: "spec.parameters.username"
+          toFieldPath: "spec.forProvider.username"
+        - fromFieldPath: "spec.parameters.dbSubnetGroupName"
+          toFieldPath: "spec.forProvider.dbSubnetGroupName"
+        - fromFieldPath: "spec.parameters.parametergroupname"
+          toFieldPath: "spec.forProvider.parameterGroupName"
+        - fromFieldPath: "spec.parameters.dbName"
+          toFieldPath: "metadata.name"
+        - fromFieldPath: "spec.parameters.optiongroupname"
+          toFieldPath: "spec.forProvider.optionGroupName"
+        #        - fromFieldPath: "spec.parameters.finalSnapshotIdentifier"
+        #          toFieldPath: "spec.forProvider.finalSnapshotIdentifier"
+        #        - fromFieldPath: "spec.parameters.snapshotIdentifier"
+        #          toFieldPath: "spec.forProvider.snapshotIdentifier"
+        - type: ToCompositeFieldPath
+          fromFieldPath: "status.atProvider.endpoint"
+          toFieldPath: "status.endpoint"
+        - fromFieldPath: "spec.parameters.passwordSecretRef"
+          toFieldPath: "spec.forProvider.passwordSecretRef"
+        - fromFieldPath: "status.kmsKeyId"
+          toFieldPath: "spec.forProvider.kmsKeyId"
+    - name: "subnet-group"
+      base:
+        apiVersion: rds.aws.upbound.io/v1beta1
+        kind: SubnetGroup
+        metadata:
+          name: rds-subnet-group
+        status:
+          conditions: true
+      patches:
+        - fromFieldPath: "spec.parameters.region"
+          toFieldPath: "spec.forProvider.region"
+        - fromFieldPath: "spec.parameters.subnetIds"
+          toFieldPath: "spec.forProvider.subnetIds"
+        - fromFieldPath: "spec.parameters.dbSubnetGroupName"
+          toFieldPath: "metadata.name"
+    - name: "parameter-group"
+      base:
+        apiVersion: rds.aws.upbound.io/v1beta1
+        kind: ParameterGroup
+        metadata:
+          name: rds-parametergroup
+        spec:
+          forProvider:
+            description: rds parameter group
+        status:
+          conditions: true
+      patches:
+        - fromFieldPath: "spec.parameters.region"
+          toFieldPath: "spec.forProvider.region"
+        - fromFieldPath: "spec.parameters.parameter"
+          toFieldPath: "spec.forProvider.parameter"
+        - fromFieldPath: "spec.parameters.family"
+          toFieldPath: "spec.forProvider.family"
+        - fromFieldPath: "spec.parameters.parametergroupname"
+          toFieldPath: "metadata.name"
+    - name: "option-group"
+      base:
+        apiVersion: rds.aws.upbound.io/v1beta1
+        kind: OptionGroup
+        metadata:
+          name: rds-optiongroup
+        status:
+          conditions: true
+      patches:
+        - fromFieldPath: "spec.parameters.region"
+          toFieldPath: "spec.forProvider.region"
+        - fromFieldPath: "spec.parameters.engineName"
+          toFieldPath: "spec.forProvider.engineName"
+        - fromFieldPath: "spec.parameters.majorEngineVersion"
+          toFieldPath: "spec.forProvider.majorEngineVersion"
+        - fromFieldPath: "spec.parameters.optionGroupDescription"
+          toFieldPath: "spec.forProvider.optionGroupDescription"
+        - fromFieldPath: "spec.parameters.optiongroupname"
+          toFieldPath: "metadata.name"
+    - name: "record-dbname-to-cname"
+      base:
+        apiVersion: route53.aws.upbound.io/v1beta1
+        kind: Record
+        metadata:
+          name: db-cname-record
+        status:
+          conditions: true
+      patches:
+        - fromFieldPath: "spec.parameters.region"
+          toFieldPath: "spec.forProvider.region"
+        - fromFieldPath: "spec.parameters.recordname"
+          toFieldPath: "spec.forProvider.name"
+        - fromFieldPath: "status.endpoint"
+          toFieldPath: "spec.forProvider.records[0]"
+          transforms:
+            - type: string
+              string:
+                fmt: "%s"
+        - fromFieldPath: "spec.parameters.ttl"
+          toFieldPath: "spec.forProvider.ttl"
+        - fromFieldPath: "spec.parameters.type"
+          toFieldPath: "spec.forProvider.type"
+        - fromFieldPath: "spec.parameters.zoneId"
+          toFieldPath: "spec.forProvider.zoneId"
+    - name: "kms-key-generation"
+      base:
+        apiVersion: kms.aws.upbound.io/v1beta1
+        kind: Key
+        metadata:
+          name: sample-key
+        status:
+          conditions: true
+      patches:
+        - fromFieldPath: "spec.parameters.region"
+          toFieldPath: "spec.forProvider.region"
+        - fromFieldPath: "spec.parameters.deletionWindowInDays"
+          toFieldPath: "spec.forProvider.deletionWindowInDays"
+        - fromFieldPath: "spec.parameters.description"
+          toFieldPath: "spec.forProvider.description"
+        - fromFieldPath: "spec.parameters.policy"
+          toFieldPath: "spec.forProvider.policy"
+        - type: ToCompositeFieldPath
+          fromFieldPath: "status.atProvider.keyId"
+          toFieldPath: "status.keyId"
+        - type: ToCompositeFieldPath
+          fromFieldPath: "status.atProvider.arn"
+          toFieldPath: "status.kmsKeyId"
+    - name: "kms-alias name"
+      base:
+        apiVersion: kms.aws.upbound.io/v1beta1
+        kind: Alias
+        metadata:
+          name: rds-kms
+        status:
+          conditions: true
+      patches:
+        - fromFieldPath: "spec.parameters.region"
+          toFieldPath: "spec.forProvider.region"
+        - fromFieldPath: "status.keyId"
+          toFieldPath: "spec.forProvider.targetKeyId"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rds-db
+type: Opaque
+data:
+  password: YWRtaW5wYXNzd29yZA==
+
+# all working

@@ -1,0 +1,14 @@
+apiVersion: rds.aws.upbound.io/v1beta1
+kind: Instance
+metadata:
+  name: exampledbinstance
+spec:
+  forProvider:
+    allocatedStorage: 20
+    dbName: replica
+    instanceClass: db.t3.small
+    publiclyAccessible: false
+    region: ap-south-1
+    storageEncrypted: true
+    storageType: gp3
+    replicateSourceDb: arn:aws:rds:ap-south-1:211125510872:db:terraform-202406200534215773000000ee
