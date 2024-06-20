@@ -1,0 +1,178 @@
+apiVersion: rds.aws.upbound.io/v1beta1
+kind: Instance
+metadata:
+  name: exampledbinstance
+spec:
+  forProvider:
+    allocatedStorage: 20
+    autoGeneratePassword: true
+    autoMinorVersionUpgrade: true
+    backupRetentionPeriod: 7
+    backupWindow: 09:46-10:16
+    dbName: rdstest
+    engine: mysql
+    engineVersion: "8.0"
+    instanceClass: db.m5d.large
+    maintenanceWindow: Mon:00:00-Mon:03:00
+    manageMasterUserPassword: true
+    publiclyAccessible: false
+    region: ap-south-1
+    skipFinalSnapshot: true
+    storageEncrypted: true
+    storageType: gp3
+    username: adminuser
+  writeConnectionSecretToRef:
+    name: my-rds-secret
+    namespace: crossplane-system
+
+---
+apiVersion: rds.aws.upbound.io/v1beta1
+kind: SubnetGroup
+metadata:
+  name: rds-subnet-group
+spec:
+  forProvider:
+    region: ap-south-1
+    subnetIds:
+      - subnet-0b7103d3ce0bcda5d
+      - subnet-04dd17649566d5f74
+      - subnet-06b1065993f03356b
+
+---
+apiVersion: rds.aws.upbound.io/v1beta1
+kind: ParameterGroup
+metadata:
+  name: rds-parametergroup
+spec:
+  forProvider:
+    description: rds parameter group
+    family: mysql8.0
+    parameter:
+      - applyMethod: immediate
+        name: activate_all_roles_on_login
+        value: "1"
+      - applyMethod: immediate
+        name: autocommit
+        value: "1"
+      # add more here
+    region: ap-south-1
+
+---
+apiVersion: rds.aws.upbound.io/v1beta1
+kind: OptionGroup
+metadata:
+  name: rds-optiongroups
+spec:
+  forProvider:
+    engineName: mysql
+    majorEngineVersion: "8.0"
+    #    option:
+    #      - optionName: MEMCACHED
+    optionGroupDescription: Upbound Option Group
+    region: ap-south-1
+
+---
+apiVersion: route53.aws.upbound.io/v1beta1
+kind: Record
+metadata:
+  name: db-cname-record
+spec:
+  forProvider:
+    name: www
+    records:
+      - dev.upbound.io
+    region: ap-south-1
+    ttl: 5
+    type: CNAME
+    zoneId: #zone id
+---
+
+apiVersion: rds.aws.upbound.io/v1beta1
+kind: Instance
+metadata:
+  name: exampledbinstance
+spec:
+  forProvider:
+    allocatedStorage: 20
+    dbName: replica
+    instanceClass: db.m5d.large
+    publiclyAccessible: false
+    region: ap-south-1
+    storageEncrypted: true
+    storageType: gp3
+    replicateSourceDb: arn:aws:rds:ap-south-1:211125510872:db:database-1 # will come from status
+---
+apiVersion: kms.aws.upbound.io/v1beta1
+kind: Key
+metadata:
+  name: sample-key
+spec:
+  forProvider:
+    deletionWindowInDays: 7
+    description: Created with Crossplane
+    region: ap-south-1
+    policy: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "Default",
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": "arn:aws:iam::211125510872:root"
+            },
+            "Action": "kms:*",
+            "Resource": "*"
+          },
+          {
+            "Sid": "KeyAdministration",
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": "arn:aws:iam::211125510872:user/aws_tf_user"
+            },
+            "Action": [
+              "kms:Update*",
+              "kms:UntagResource",
+              "kms:TagResource",
+              "kms:ScheduleKeyDeletion",
+              "kms:Revoke*",
+              "kms:ReplicateKey",
+              "kms:Put*",
+              "kms:List*",
+              "kms:ImportKeyMaterial",
+              "kms:Get*",
+              "kms:Enable*",
+              "kms:Disable*",
+              "kms:Describe*",
+              "kms:Delete*",
+              "kms:Create*",
+              "kms:CancelKeyDeletion"
+            ],
+            "Resource": "*"
+          },
+          {
+            "Sid": "KeyUsage",
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": "arn:aws:iam::211125510872:role/sandbox-ap-south-1-cluster-20240531101435513800000001"
+            },
+            "Action": [
+              "kms:ReEncrypt*",
+              "kms:GenerateDataKey*",
+              "kms:Encrypt",
+              "kms:DescribeKey",
+              "kms:Decrypt"
+            ],
+            "Resource": "*"
+          }
+        ]
+      }
+---
+apiVersion: kms.aws.upbound.io/v1beta1
+kind: Alias
+metadata:
+  name: rds-kms
+spec:
+  forProvider:
+    region: ap-south-1
+    targetKeyId: arn:aws:kms:ap-south-1:211125510872:key/02e03743-1ae6-4557-b1e1-b2b2c96
